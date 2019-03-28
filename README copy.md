@@ -1,6 +1,3 @@
-```bash
-parcel src/index.html --global nv
-```
 
 > A boilerplate for deploying quick typescript apps with testing
 
