@@ -6,9 +6,9 @@ module.exports = function SRT6(transport?: { callback?: Function }) {
   if (transport && transport.callback) return transport.callback()
   // return nv
 }
-let scriptSRC = document.createElement("SCRIPT");
+let scriptSRC = document.createElement(`SCRIPT`);
 function rep(self: any, target: string, property: string) {
-  if (self.spreadsScripts[target].length) { // Could be optimized? "var x" declaration in IF?
+  if (self.spreadsScripts[target].length) { // Could be optimized? `var x` declaration in IF?
     let y = self.spreadsScripts[target].length;
     let x = -1;
     while (++x < y) {

@@ -1,4 +1,4 @@
-module.exports = function SRT4(transport) { // "Scan UI; build navigation."
+module.exports = function SRT4(transport) { // `Scan UI; build navigation.`
     // let scanUI = function scanUI(node, func) { //  Scan UI
     //     func(node);
     //     node = node.firstChild;
@@ -8,7 +8,7 @@ module.exports = function SRT4(transport) { // "Scan UI; build navigation."
     //     }
     // }
     // scanUI(this.slc.ui, function(node) { // Registers UI and all child elements thereof to this.slc for convenience.
-    //     if (node.nodeType == 1 && node.nodeName != "svg" && node.nodeName != "g" && node.nodeName != "path" && node.nodeName != "polygon" && node.nodeName != "polyline") { // Ensures that it will only register nodes with TAGs, unlike text nodes.
+    //     if (node.nodeType == 1 && node.nodeName != `svg` && node.nodeName != `g` && node.nodeName != `path` && node.nodeName != `polygon` && node.nodeName != `polyline`) { // Ensures that it will only register nodes with TAGs, unlike text nodes.
     //         let uniqueRef = node.id.toLowerCase() || node.className.toLowerCase() || node.tagName.toLowerCase();
     //         if (this.slc[uniqueRef] == void 0) this.slc[uniqueRef] = node // If slot in this.slc is empty, register DOM element.
     //         else if (this.slc[uniqueRef] === node) { // If slot is occupied by the identical node.
@@ -24,20 +24,20 @@ module.exports = function SRT4(transport) { // "Scan UI; build navigation."
     // });
     if (this.slc.navigation) { //  Build UI
         let docFrag = document.createDocumentFragment(),
-            srcLI = document.createElement('LI'),
-            srcA = document.createElement("A");
+            srcLI = document.createElement(`LI`),
+            srcA = document.createElement(`A`);
         nv.spreads.each(function(spread) {
             let el = spread.el,
                 id = el.id,
                 li = srcLI.cloneNode(!1),
                 a = srcA.cloneNode(!1);
             if (!id) id = el.tagName || el.className
-            a.href = "#".concat(id);
+            a.href = `#`.concat(id);
             a.textContent = id;
             li.appendChild(a);
             docFrag.appendChild(li)
         });
-        // if (nv.bln.respawn) this.slc.navigation.innerHTML = "" // If respawned, wipe nav clean.
+        // if (nv.bln.respawn) this.slc.navigation.innerHTML = `` // If respawned, wipe nav clean.
         this.slc.navigation.appendChild(docFrag);
         // navOriginalLength = this.slc.navigation.children.length; // Seems very dirty.
     }
