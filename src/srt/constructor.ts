@@ -10,7 +10,7 @@ class INVNTM {
 	public slc: object; 	//	 selectors
 	public spr: object; 	//	 spreads
 	public str: object; 	//	 strings
-	private sbr = Array<Function>;
+	private sbr: Array<Function>;
 
 	// public logMyself() {
 	// 	console.log(this);

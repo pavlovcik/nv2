@@ -22,9 +22,9 @@ export default function GET(
         while (x--) { // CSS / JS handler is redundant.
             if (onfail == UNDEF) onfail = function() { }
             if (!x) {
-                SELF.functions.get(Q[x], onsuccess, data, onfail);
+                this.fnc.get(Q[x], onsuccess, data, onfail);
             } else {
-                SELF.functions.get(Q[x], onsuccess, data, onfail, callback)
+                this.fnc.get(Q[x], onsuccess, data, onfail, callback)
             }
         }
         return true
@@ -49,7 +49,7 @@ export default function GET(
                     if (SELF.numbers.backoff < 5) {
                         if (this.loading_module) this.loading_module('Error');
                         return setTimeout(function() {
-                            SELF.functions.get(xhr.responseURL, onsuccess, data, onfail, callback)
+                            this.fnc.get(xhr.responseURL, onsuccess, data, onfail, callback)
                         }, (Math.random() + (SELF.numbers.backoff += SELF.numbers.backoff)) * 1000)
                     } else onfail(xhr)
                 } else onfail(xhr)
