@@ -238,7 +238,8 @@ function nv(settings, callback) { // NV Iota
                     x = incomingSpreads.length;
                 while (x--) {
                     nv.spreads.each(function (s) { // Search and destroy spread name collisions, reject incoming redundant spread names.
-                        if (incomingSpreads[x].slice(incomingSpreads[x].lastIndexOf("/") + 1).toLowerCase().indexOf(s.el.id.toLowerCase()) !== -1) collisions.push(incomingSpreads.splice(x, 1)) // Reject the conflict.
+                        if (incomingSpreads[x].slice(incomingSpreads[x].lastIndexOf("/") + 1)
+                            .toLowerCase().indexOf(s.el.id.toLowerCase()) !== -1) collisions.push(incomingSpreads.splice(x, 1)) // Reject the conflict.
                     })
                 }
                 if (collisions.length) console.error(["❌ Conflicts rejected: \"", collisions, "\""].join("")) // Report collisions.
@@ -446,7 +447,12 @@ function nv(settings, callback) { // NV Iota
                 }
             }
             scanUI(nv.selectors.ui, function (node) { // Registers UI and all child elements thereof to nv.selectors for convenience.
-                if (node.nodeType == 1 && node.nodeName != "svg" && node.nodeName != "g" && node.nodeName != "path" && node.nodeName != "polygon" && node.nodeName != "polyline") { // Ensures that it will only register nodes with TAGs, unlike text nodes.
+                if (node.nodeType == 1 &&
+                    node.nodeName != "svg" &&
+                    node.nodeName != "g" &&
+                    node.nodeName != "path" &&
+                    node.nodeName != "polygon" &&
+                    node.nodeName != "polyline") { // Ensures that it will only register nodes with TAGs, unlike text nodes.
                     var uniqueRef = node.id.toLowerCase() || node.className.toLowerCase() || node.tagName.toLowerCase();
                     if (nv.selectors[uniqueRef] == void 0) nv.selectors[uniqueRef] = node // If slot in nv.selectors is empty, register DOM element.
                     else if (nv.selectors[uniqueRef] === node) { // If slot is occupied by the identical node.
@@ -515,8 +521,9 @@ function nv(settings, callback) { // NV Iota
                             if (viewing && nv.spreads.active.el.id == viewing.innerHTML) viewing.className = "Active"
                             else viewing.className = "";
                         }
-                        if (nv.spreads.hero().el.id != nv.spreads.active.el.id) nv.selectors.navigation.setAttribute("data-viewing", nv.spreads.active.el.id) // Sets UI title to name of spread if not looking at the first spread.
-                        else nv.selectors.navigation.setAttribute("data-viewing", "Navigation") // If looking at the first spread, set title to "Navigation" so that it is clear to the user that it is a navigation bar.
+                        if (nv.spreads.hero().el.id != nv.spreads.active.el.id) {
+                            nv.selectors.navigation.setAttribute("data-viewing", nv.spreads.active.el.id) // Sets UI title to name of spread if not looking at the first spread.
+                        } else nv.selectors.navigation.setAttribute("data-viewing", "Navigation") // If looking at the first spread, set title to "Navigation" so that it is clear to the user that it is a navigation bar.
                     }
                 }
 
