@@ -1,24 +1,28 @@
 module.exports = function SRT3(transport) { // "Spread construction."
 
     // Test via a getter in the options object to see if the passive property is accessed
-    let supportsPassive = false;
-    try {
-        let opts = Object.defineProperty({}, 'passive', {
-            get: () => supportsPassive = true;
-        });
-        window.addEventListener("testPassive", null, opts);
-        window.removeEventListener("testPassive", null, opts);
+    // let supportsPassive = false;
+    // try {
+    //     let opts = Object.defineProperty({},
+    //         'passive', {
+    //             get: () => supportsPassive = true;
+    //         });
+    //     window.addEventListener("testPassive", null, opts);
+    //     window.removeEventListener("testPassive", null, opts);
 
-    } catch (e) { }
-
-    if (this.slc.spreads) {
-        this.spr = new Spreads(this.slc.spreads.children, this.spr) // Register main#Spreads children, and injected spreads, to controller.
+    // } catch (e) { }
+    // debugger;
+    if (this.slc.spr) {
+        this.spr = new Spreads(
+            /*this.slc.spr.children, */
+            this.spr, this.slc.spr, this.spreadsScripts, transport, this // this is a disaster
+        ) // Register main#Spreads children, and injected spreads, to controller.
     }
     return this.next(transport, 4)
 }
 
 
-function parseJavaScript(html_content: string) { //  html_content = STRING
+function parseJavaScript(html_content: string, spreadsScripts) { //  html_content = STRING
     // # Nice comment for demos -> // console.log("✅", html_content.data);
     let html_content_copy = html_content;
     if (html_content_copy && html_content_copy.indexOf("<script") != -1) { // Scans for scripts.
@@ -55,7 +59,10 @@ function parseJavaScript(html_content: string) { //  html_content = STRING
     }
     return html_content.replace(/\n\s+|\n/g, ''); // :-( Regex twice to preserve line breaks for code, then remove whitespace for "display:inline-block" bug, and pretty DOM.
 };
-function Spreads(DOMSpreads, injectURLs) { // Spread constructor and adds each to controller.
+function Spreads(
+    /*DOMSpreads,*/
+    injectURLs, selfSlcSpr, spreadsScripts, transport, self    //    this is a disaster
+) { // Spread constructor and adds each to controller.
     this.models = []; // Spreads completed prototype looks like: ".models", ".injected", ".active", ".scripts".
     this.cache = [];
     if (injectURLs) {
@@ -78,21 +85,21 @@ function Spreads(DOMSpreads, injectURLs) { // Spread constructor and adds each t
                 tempid = tempid.charAt(0).toUpperCase().concat(tempid.slice(1)); // Capitalize the first character.
                 section.id = tempid;
                 injectURLs.injected[x].selector = section;
-                this.slc.spreads[tempid] = section;
-                this.slc.spreads.appendChild(section) // If no existing spread(s), just append this spread as child of #Spreads.
+                selfSlcSpr[tempid] = section;
+                selfSlcSpr.appendChild(section) // If no existing spread(s), just append this spread as child of #Spreads.
                 this.injected.push(section); // Place this spread ("section") into beginning of this.spreads.injected
                 if (!injectURLs.injected[x].data) { //  one
-                    this.fnc.get(injectURLs.injected[x].uri, getSpread, section);
+                    self.fnc.get(injectURLs.injected[x].uri, getSpread.bind(self), section);
                 } else { //  two
                     section.innerHTML = [
                         "<article>",
-                        parseJavaScript(injectURLs.injected[x].data),
+                        parseJavaScript(injectURLs.injected[x].data, spreadsScripts),
                         "</article>"
                     ].join('');
                     section.children[0].addEventListener('touchstart', function() { }, { passive: true });
                     if (!--this.spreadsPending) {
                         // console.log('this.spreadsPending!', this.spreadsPending);
-                        this.next(transport, 6)
+                        self.next(transport, 6)
                     }
                 }
             } else {
@@ -101,23 +108,29 @@ function Spreads(DOMSpreads, injectURLs) { // Spread constructor and adds each t
             }
         }
     }
-    this.register(DOMSpreads);
+    this.register(selfSlcSpr.children);
     // this.next(
     // { transport.callback); //  Callback when spreads are ready}, 6
     // )
     return this;
+
     function getSpread(xhr) {
         xhr.data.innerHTML = [
             "<article>",
-            parseJavaScript(xhr.response),
+            parseJavaScript(xhr.response, spreadsScripts),
             "</article>"
         ].join('');
-        xhr.data.children[0].addEventListener('touchstart', function() { }, supportsPassive ? { passive: true } : false);
+        // xhr.data.children[0].addEventListener('touchstart',
+        //     function() { },
+        //     supportsPassive ? { passive: true } : false
+        // );
         if (!--this.spreadsPending) {
             // console.log('this.spreadsPending!', this.spreadsPending);
             this.next(transport, 6)
         }
     };
+
+
 };
 Spreads.prototype = {
     register: function(DOMSpreads) {

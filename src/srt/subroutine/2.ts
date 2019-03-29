@@ -16,8 +16,8 @@ module.exports = function SRT2(transport) {
     if (Array.isArray(spread_url)) {
         // If array, pull out elements and fetch. This is a simple queue system.
         if (spread_url.length) {
-            // console.log(spreadsPending,192);
-            spreadsPending = spread_url.length;
+            // console.log(this.spreadsPending,192);
+            this.spreadsPending = spread_url.length;
             return this.next({ injected: this.spr.injected.pop(), callback }, 2)
         } else return this.next(transport, 3)
     } else if (typeof spread_url == "string") {
@@ -34,69 +34,7 @@ module.exports = function SRT2(transport) {
         // console.log("Spread", ["\"", spread_url, "\""].join(""), "is a", isDirectory ? "directory." : "file.")
         if (isDirectory && spread_url.slice(-1) != "/") spread_url = spread_url.concat("/")
         // Add missing forward slash to URL if directory.
-        this.functions.get(spread_url, function onsuccess(xhr) {
-            if (xhr.responseURL.indexOf(".htm") != -1 || xhr.responseURL.indexOf(".php") != -1) {
-                // If target URL containing .htm (.html) or .php extension, defer to individual injection.
-                // # Nice comment for demos ->
-                // console.log(["✅ \"", spread_url, "\""].join(""))
-                this.spr.cache.push({
-                    uri: spread_url,
-                    data: xhr.response
-                });
-                this.next({ injected: this.spr.injected.pop(), callback }, 2)
-            } else {
-                if (xhr.response.toUpperCase().indexOf("<!DOCTYPE HTML") != -1) {
-                    // HTML detected, time to scrape anchors.
-                    let raw = xhr.response.match(/a href=\".+?\"/ig),
-                        options = [];
-                    if (raw == null) console.warn("Failed to scrape hrefs from target document.")
-                    else {
-                        let x = 0;
-                        while (raw.length - 1 > x++) {
-                            if (raw[x].charAt(8) != "?") {
-                                // hrefs starting with "?" are only for the Apache directory screen. charAt(8) because 'a href="' is 7 characters long.
-                                let url = (raw[x].replace('a href="', '')).slice(0, -1);
-                                if (-1 === url.indexOf(" ")) url = decodeURI(url);
-                                options.push(url)
-                                // Extracts URL from within 'a href="', '"' wrapper.
-                            }
-                        }
-                    }
-                } else {
-                    // If HTML is not detected, assume that it is the proper array of URLs to spreads to inject. This could be a CMS array( ! )
-                    try {
-                        let options = JSON.parse(xhr.response);
-                        // JSON.parse is always risky business, so wrapping inside of try catch.
-                    } catch (e) {
-                        console.log("Invalid response from this.functions.spreads(*) target", e, xhr.response);
-                        return this.next({ injected: this.spr.injected.pop(), callback }, 2);
-                        // Exit
-                    }
-                }
-                let x = -1;
-                while (options.length - 1 > x++) {
-                    if (Array.isArray(options[x])) {
-                        let y = 0,
-                            // Array length of multidimensional (internal) array. [ "" , [ "" , ""] , "" ]
-                            z = y;
-                        // Offset.
-                        while (options[x].length - 1 > y++) options.unshift(options[x][y])
-                        // Flatten multidimensional array.
-                        options.splice(x -= z, 1);
-                        // Remove multidimensional array.
-                    }
-                    if (options[x].match(/.+(?=(\.html?$|\.php$)).+/i) && (options[x].charAt(1) == "." || options[x].charAt(0) != ".") && options[x] != "index.php") {
-                        this.spr.cache.push({
-                            uri: spread_url.concat(options[x])
-                        });
-                        // ajax "cache" store in ".cache". Also near line 180.
-                        // console.log(["✅ \"", options[x], "\""].join(""))
-                    } else console.log(["❌ \"", options[x], "\""].join(""))
-                }
-                this.next({ injected: this.spr.injected.pop(), callback }, 2);
-                // This allows for multiple directory checks.
-            }
-        }, null, function onfail(xhr) {
+        this.fnc.get(spread_url, postAjaxSpreadInject.bind(this), { spread_url, transport }, function onfail(xhr) {
             console.error("XHR failure.", xhr);
             this.next({ injected: this.spr.injected.pop(), callback }, 2);
             // Proceed to next.
@@ -120,4 +58,76 @@ module.exports = function SRT2(transport) {
         return this.next({ cache: this.spr.cache.pop(), callback }, 2)
         // Damage control complete.
     }
+}
+
+function postAjaxSpreadInject(xhr) {
+    let spread_url = xhr.data.transport.injected;
+    let callback = xhr.data.transport.callback;
+
+    // function onsuccess(xhr) {
+    if (xhr.responseURL.indexOf(".htm") != -1 || xhr.responseURL.indexOf(".php") != -1) {
+        // If target URL containing .htm (.html) or .php extension, defer to individual injection.
+        // # Nice comment for demos ->
+        // console.log(["✅ \"", spread_url, "\""].join(""))
+        this.spr.cache.push({
+            uri: spread_url,
+            data: xhr.response
+        });
+        this.next({ injected: this.spr.injected.pop(), callback }, 2)
+
+    } else {
+
+        if (xhr.response.toUpperCase().indexOf("<!DOCTYPE HTML") != -1) {
+            // HTML detected, time to scrape anchors.
+            let raw = xhr.response.match(/a href=\".+?\"/ig),
+                options = [];
+            if (raw == null) console.warn("Failed to scrape hrefs from target document.")
+            else {
+                let x = 0;
+                while (raw.length - 1 > x++) {
+                    if (raw[x].charAt(8) != "?") {
+                        // hrefs starting with "?" are only for the Apache directory screen. charAt(8) because 'a href="' is 7 characters long.
+                        let url = (raw[x].replace('a href="', '')).slice(0, -1);
+                        if (-1 === url.indexOf(" ")) url = decodeURI(url);
+                        options.push(url)
+                        // Extracts URL from within 'a href="', '"' wrapper.
+                    }
+                }
+            }
+        } else {
+            // If HTML is not detected, assume that it is the proper array of URLs to spreads to inject. This could be a CMS array( ! )
+            try {
+                let options = JSON.parse(xhr.response);
+                // JSON.parse is always risky business, so wrapping inside of try catch.
+            } catch (e) {
+                console.log("Invalid response from this.fnc.spreads(*) target", e, xhr.response);
+                return this.next({ injected: this.spr.injected.pop(), callback }, 2);
+                // Exit
+            }
+        }
+        let x = -1;
+        while (options.length - 1 > x++) {
+            if (Array.isArray(options[x])) {
+                let y = 0,
+                    // Array length of multidimensional (internal) array. [ "" , [ "" , ""] , "" ]
+                    z = y;
+                // Offset.
+                while (options[x].length - 1 > y++) options.unshift(options[x][y])
+                // Flatten multidimensional array.
+                options.splice(x -= z, 1);
+                // Remove multidimensional array.
+            }
+            if (options[x].match(/.+(?=(\.html?$|\.php$)).+/i) && (options[x].charAt(1) == "." || options[x].charAt(0) != ".") && options[x] != "index.php") {
+                this.spr.cache.push({
+                    uri: spread_url.concat(options[x])
+                });
+                // ajax "cache" store in ".cache". Also near line 180.
+                // console.log(["✅ \"", options[x], "\""].join(""))
+            } else console.log(["❌ \"", options[x], "\""].join(""))
+        }
+        this.next({ injected: this.spr.injected.pop(), callback }, 2);
+        // This allows for multiple directory checks.
+    }
+    // }
+
 }

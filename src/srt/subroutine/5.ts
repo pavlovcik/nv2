@@ -1,15 +1,16 @@
 
+let frame_instructions: Function;
 
 module.exports = function SRT5() { // "Events."
     // if (!this.bln.respawn) { // Add events once.
 
-    let frame_instructions = active_cb;
-    if (this.spr.measure) frame_instructions();
+    frame_instructions = active_cb;
+    if (this.spr.measure) frame_instructions.bind(this);
 
-    window.addEventListener('error', error_cb);
-    window.addEventListener("beforeunload", beforeunload_cb);
-    window.addEventListener("scroll", frame_instructions);
-    window.addEventListener("hashchange", frame_instructions);
+    window.addEventListener('error', error_cb.bind(this));
+    window.addEventListener("beforeunload", beforeunload_cb.bind(this));
+    window.addEventListener("scroll", frame_instructions.bind(this));
+    window.addEventListener("hashchange", frame_instructions.bind(this));
 
     let devs = /beta|localhost|127.0.0.1|hexxie|:\d/igm;
     if (!devs.test(location.href)) this.functions.get("/js/intelligence.js")

@@ -1,9 +1,9 @@
-interface SettingsAndCallback {
-    settings?: object;
-    callback?: Function;
-}
+// interface SettingsAndCallback {
+//     settings?: object;
+//     callback?: Function;
+// }
 
-module.exports = function SRT1(transport: SettingsAndCallback) { // "Map settings."
+module.exports = function SRT1(transport: any) { // "Map settings."
 
     let settings = transport.settings;
     const callback = transport.callback;
@@ -18,10 +18,10 @@ module.exports = function SRT1(transport: SettingsAndCallback) { // "Map setting
                     if (settings[x].hasOwnProperty(y)) this[x][y] = settings[x][y]
                 }
             } else if (typeof settings[x] == "string") {
-                this[x].injected.push(settings[x]); // Fix for single spread inject. Tears up string of URL and uses each letter. Untested with this.spreads proto.
+                this.spr.injected.push(settings[x]); // Fix for single spread inject. Tears up string of URL and uses each letter. Untested with this.spreads proto.
             } else if (Array.isArray(settings[x])) {
                 let z = settings[x].length;
-                while (z--) this[x].injected.push(settings[x][z]) // Push settings spr to "this.spr.injected"
+                while (z--) this.spr.injected.push(settings[x][z]) // Push settings spr to "this.spr.injected"
             }
         }
 
