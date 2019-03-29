@@ -26,7 +26,6 @@ function defaultOnFail() {
     throw new URIError(error_message)
 }
 
-
 export default function GET(
     target: string | Array<string>,
     onsuccess: Function,
